@@ -1,0 +1,5 @@
+{
+  "name": "NJ Town Formation Map",
+  "description": "Interactive map visualizing the historical formation of New Jersey municipalities with a scrubbable timeline.",
+  "requestFramePermissions": ["geolocation"]
+}
