@@ -1,6 +1,8 @@
 import { Town } from '../data/towns';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Calendar, X } from 'lucide-react';
+import { MapPin, Calendar, X, Sparkles, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { generateTownPostcard } from '../services/historyService';
 
 interface SidebarProps {
   towns: Town[];
@@ -9,6 +11,21 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ towns, currentYear, onClose }: SidebarProps) {
+  const [postcards, setPostcards] = useState<Record<string, string>>({});
+  const [loadingPostcards, setLoadingPostcards] = useState<Record<string, boolean>>({});
+
+  const handleGeneratePostcard = async (town: Town) => {
+    const key = `${town.municipality}-${town.year}`;
+    if (postcards[key]) return;
+
+    setLoadingPostcards(prev => ({ ...prev, [key]: true }));
+    const url = await generateTownPostcard(town.municipality, town.year);
+    if (url) {
+      setPostcards(prev => ({ ...prev, [key]: url }));
+    }
+    setLoadingPostcards(prev => ({ ...prev, [key]: false }));
+  };
+
   const filteredTowns = towns
     .filter(t => t.year <= currentYear)
     .sort((a, b) => b.year - a.year);
@@ -32,7 +49,7 @@ export default function Sidebar({ towns, currentYear, onClose }: SidebarProps) {
         )}
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-20 md:pb-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-4">
         <AnimatePresence initial={false}>
           {filteredTowns.map((town) => (
             <motion.div
@@ -43,13 +60,49 @@ export default function Sidebar({ towns, currentYear, onClose }: SidebarProps) {
               className="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group relative overflow-hidden"
             >
               {/* Tooltip Overlay */}
-              <div className="absolute inset-0 bg-gray-900/95 text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center z-10 pointer-events-none">
-                <div className="text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-2">Detailed Info</div>
-                <div className="space-y-1 text-sm">
-                  <p><span className="text-gray-400">County:</span> {town.county}</p>
-                  <p><span className="text-gray-400">Type:</span> <span className="capitalize">{town.type}</span></p>
-                  <p><span className="text-gray-400">Established:</span> {town.year}</p>
-                </div>
+              <div className="absolute inset-0 bg-gray-900/95 text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center z-10">
+                {postcards[`${town.municipality}-${town.year}`] ? (
+                  <div className="relative h-full w-full">
+                    <img 
+                      src={postcards[`${town.municipality}-${town.year}`]} 
+                      alt="Historical Postcard" 
+                      className="w-full h-full object-cover rounded-lg"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/60 backdrop-blur-sm rounded-b-lg">
+                      <p className="text-[10px] text-blue-300 font-bold uppercase tracking-widest">AI Vision: {town.year}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-2">Detailed Info</div>
+                    <div className="space-y-1 text-sm mb-4">
+                      <p><span className="text-gray-400">County:</span> {town.county}</p>
+                      <p><span className="text-gray-400">Type:</span> <span className="capitalize">{town.type}</span></p>
+                      <p><span className="text-gray-400">Established:</span> {town.year}</p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleGeneratePostcard(town);
+                      }}
+                      disabled={loadingPostcards[`${town.municipality}-${town.year}`]}
+                      className="mt-auto flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white rounded-xl text-xs font-bold transition-colors pointer-events-auto"
+                    >
+                      {loadingPostcards[`${town.municipality}-${town.year}`] ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          <span>Generating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={14} />
+                          <span>Generate AI Postcard</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
               </div>
 
               <div className="flex justify-between items-start mb-2">

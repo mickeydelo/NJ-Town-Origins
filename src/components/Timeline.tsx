@@ -59,7 +59,7 @@ export default function Timeline({ minYear, maxYear, currentYear, onChange }: Ti
             max={maxYear}
             value={currentYear}
             onChange={(e) => onChange(parseInt(e.target.value))}
-            className="w-full h-1.5 md:h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            className="w-full h-4 md:h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 touch-none"
           />
         </div>
       </div>

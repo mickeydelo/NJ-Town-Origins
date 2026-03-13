@@ -1,21 +1,35 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Map from './components/Map';
 import Timeline from './components/Timeline';
 import Sidebar from './components/Sidebar';
 import { NJ_TOWNS } from './data/towns';
 import { motion, AnimatePresence } from 'motion/react';
-import { Map as MapIcon, Info, List, X } from 'lucide-react';
+import { Map as MapIcon, Info, List, X, Sparkles, History } from 'lucide-react';
+import { getYearlyInsight } from './services/historyService';
 
 export default function App() {
   const minYear = useMemo(() => Math.min(...NJ_TOWNS.map(t => t.year)), []);
   const maxYear = useMemo(() => Math.max(...NJ_TOWNS.map(t => t.year)), []);
   const [currentYear, setCurrentYear] = useState(minYear);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [insight, setInsight] = useState<string>("");
+  const [isInsightLoading, setIsInsightLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      setIsInsightLoading(true);
+      const text = await getYearlyInsight(currentYear);
+      setInsight(text);
+      setIsInsightLoading(false);
+    }, 1000); // Debounce to avoid too many API calls while scrubbing
+
+    return () => clearTimeout(timer);
+  }, [currentYear]);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full bg-[#fdfdfd] text-gray-900 overflow-hidden font-sans">
+    <div className="flex flex-col md:flex-row h-[100dvh] w-full bg-[#fdfdfd] text-gray-900 overflow-hidden font-sans">
       {/* Main Content */}
-      <main className="flex-1 flex flex-col relative min-w-0 h-full">
+      <main className="flex-1 flex flex-col relative min-w-0 h-full pb-[env(safe-area-inset-bottom)]">
         {/* Header */}
         <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between bg-white/50 backdrop-blur-md border-b border-gray-100 z-[1002]">
           <div className="flex items-center gap-3 md:gap-4">
@@ -53,8 +67,38 @@ export default function App() {
         <div className="flex-1 relative overflow-hidden">
           <Map towns={NJ_TOWNS} currentYear={currentYear} />
           
+          {/* AI Historian Panel */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentYear}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="absolute top-24 md:top-32 left-4 md:left-8 z-[1000] max-w-xs"
+            >
+              <div className="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-amber-100 text-amber-600 rounded-lg">
+                    <History size={14} />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">AI Historian</span>
+                  {isInsightLoading && (
+                    <motion.div
+                      animate={{ opacity: [0.4, 1, 0.4] }}
+                      transition={{ repeat: Infinity, duration: 1.5 }}
+                      className="w-1.5 h-1.5 bg-amber-400 rounded-full ml-auto"
+                    />
+                  )}
+                </div>
+                <p className="text-xs leading-relaxed text-gray-700 italic">
+                  "{insight || "Observing the landscape..."}"
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+          
           {/* Floating Timeline Control */}
-          <div className="absolute bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 md:px-6 z-[1000]">
+          <div className="absolute bottom-[calc(3rem+env(safe-area-inset-bottom))] md:bottom-10 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 md:px-6 z-[1000]">
             <Timeline 
               minYear={minYear} 
               maxYear={maxYear} 
@@ -83,7 +127,7 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full z-[2001] w-full sm:w-80 shadow-2xl md:hidden"
+              className="fixed top-0 right-0 h-[100dvh] z-[2001] w-full sm:w-80 shadow-2xl md:hidden"
             >
               <Sidebar towns={NJ_TOWNS} currentYear={currentYear} onClose={() => setIsSidebarOpen(false)} />
             </motion.div>
