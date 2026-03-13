@@ -32,7 +32,7 @@ export default function Sidebar({ towns, currentYear, onClose }: SidebarProps) {
         )}
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-20 md:pb-4">
         <AnimatePresence initial={false}>
           {filteredTowns.map((town) => (
             <motion.div

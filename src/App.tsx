@@ -17,7 +17,7 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col relative min-w-0 h-full">
         {/* Header */}
-        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between bg-white/50 backdrop-blur-md border-b border-gray-100 z-20">
+        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between bg-white/50 backdrop-blur-md border-b border-gray-100 z-[1002]">
           <div className="flex items-center gap-3 md:gap-4">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
               <MapIcon size={20} className="md:w-6 md:h-6" />
@@ -54,7 +54,7 @@ export default function App() {
           <Map towns={NJ_TOWNS} currentYear={currentYear} />
           
           {/* Floating Timeline Control */}
-          <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 md:px-6 z-[1000]">
+          <div className="absolute bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 md:px-6 z-[1000]">
             <Timeline 
               minYear={minYear} 
               maxYear={maxYear} 
@@ -75,7 +75,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSidebarOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] md:hidden"
             />
             {/* Mobile Sidebar Content */}
             <motion.div 
@@ -83,7 +83,7 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full z-50 w-full sm:w-80 shadow-2xl md:hidden"
+              className="fixed top-0 right-0 h-full z-[2001] w-full sm:w-80 shadow-2xl md:hidden"
             >
               <Sidebar towns={NJ_TOWNS} currentYear={currentYear} onClose={() => setIsSidebarOpen(false)} />
             </motion.div>
@@ -101,7 +101,7 @@ export default function App() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="fixed bottom-6 right-6 md:right-[340px] z-50 hidden sm:block"
+        className="fixed bottom-6 right-6 md:right-[340px] z-[1001] hidden sm:block"
       >
         <div className="group relative">
           <div className="w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-200 transition-all cursor-help shadow-sm">
