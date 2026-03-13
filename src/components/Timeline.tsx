@@ -9,6 +9,14 @@ interface TimelineProps {
   onChange: (year: number) => void;
 }
 
+const MILESTONES = [
+  { year: 1664, label: "British Rule" },
+  { year: 1776, label: "Independence" },
+  { year: 1830, label: "Canal Era" },
+  { year: 1894, label: "Boroughitis" },
+  { year: 1945, label: "Post-War" },
+];
+
 export default function Timeline({ minYear, maxYear, currentYear, onChange }: TimelineProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -70,6 +78,36 @@ export default function Timeline({ minYear, maxYear, currentYear, onChange }: Ti
           initial={false}
           animate={{ width: `${((currentYear - minYear) / (maxYear - minYear)) * 100}%` }}
         />
+        {MILESTONES.map((m) => {
+          const pos = ((m.year - minYear) / (maxYear - minYear)) * 100;
+          if (pos < 0 || pos > 100) return null;
+          return (
+            <div 
+              key={m.year}
+              className="absolute top-0 w-px h-full bg-gray-300 z-10"
+              style={{ left: `${pos}%` }}
+              title={m.label}
+            />
+          );
+        })}
+      </div>
+      
+      <div className="flex justify-between mt-2 px-1">
+        {MILESTONES.map((m) => {
+          const pos = ((m.year - minYear) / (maxYear - minYear)) * 100;
+          if (pos < 0 || pos > 100) return null;
+          return (
+            <button
+              key={m.year}
+              onClick={() => onChange(m.year)}
+              className={`text-[8px] md:text-[10px] uppercase tracking-tighter font-bold transition-colors hover:text-blue-600 ${
+                currentYear >= m.year ? 'text-blue-500' : 'text-gray-300'
+              }`}
+            >
+              {m.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

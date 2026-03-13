@@ -1,18 +1,20 @@
 import { Town } from '../data/towns';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Calendar, X, Sparkles, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { MapPin, Calendar, X, Sparkles, Image as ImageIcon, Loader2, Search } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { generateTownPostcard } from '../services/historyService';
 
 interface SidebarProps {
   towns: Town[];
   currentYear: number;
   onClose?: () => void;
+  onSelectTown?: (town: Town) => void;
 }
 
-export default function Sidebar({ towns, currentYear, onClose }: SidebarProps) {
+export default function Sidebar({ towns, currentYear, onClose, onSelectTown }: SidebarProps) {
   const [postcards, setPostcards] = useState<Record<string, string>>({});
   const [loadingPostcards, setLoadingPostcards] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleGeneratePostcard = async (town: Town) => {
     const key = `${town.municipality}-${town.year}`;
@@ -26,27 +28,46 @@ export default function Sidebar({ towns, currentYear, onClose }: SidebarProps) {
     setLoadingPostcards(prev => ({ ...prev, [key]: false }));
   };
 
-  const filteredTowns = towns
-    .filter(t => t.year <= currentYear)
-    .sort((a, b) => b.year - a.year);
+  const filteredTowns = useMemo(() => {
+    return towns
+      .filter(t => t.year <= currentYear)
+      .filter(t => 
+        t.municipality.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.county.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a, b) => b.year - a.year);
+  }, [towns, currentYear, searchQuery]);
 
   return (
     <div className="flex flex-col h-full bg-white border-l border-gray-100 shadow-xl w-full md:w-80">
-      <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">Municipalities</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {filteredTowns.length} formed by {currentYear}
-          </p>
+      <div className="p-6 border-b border-gray-50">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Municipalities</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {filteredTowns.length} formed by {currentYear}
+            </p>
+          </div>
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="md:hidden p-2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="md:hidden p-2 text-gray-400 hover:text-gray-600"
-          >
-            <X size={20} />
-          </button>
-        )}
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <input
+            type="text"
+            placeholder="Search towns or counties..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"
+          />
+        </div>
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-4">
@@ -54,10 +75,12 @@ export default function Sidebar({ towns, currentYear, onClose }: SidebarProps) {
           {filteredTowns.map((town) => (
             <motion.div
               key={`${town.municipality}-${town.year}`}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group relative overflow-hidden"
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={() => onSelectTown?.(town)}
+              className="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group relative overflow-hidden cursor-pointer"
             >
               {/* Tooltip Overlay */}
               <div className="absolute inset-0 bg-gray-900/95 text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center z-10">

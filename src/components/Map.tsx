@@ -6,22 +6,28 @@ import L from 'leaflet';
 interface MapProps {
   towns: Town[];
   currentYear: number;
+  selectedTown: Town | null;
 }
 
-function MapUpdater({ towns }: { towns: Town[] }) {
+function MapUpdater({ towns, selectedTown }: { towns: Town[], selectedTown: Town | null }) {
   const map = useMap();
   
   useEffect(() => {
-    if (towns.length > 0) {
+    if (selectedTown) {
+      map.flyTo([selectedTown.lat, selectedTown.lng], 12, {
+        duration: 1.5,
+        easeLinearity: 0.25
+      });
+    } else if (towns.length > 0) {
       const bounds = L.latLngBounds(towns.map(t => [t.lat, t.lng]));
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
     }
-  }, [towns, map]);
+  }, [towns, map, selectedTown]);
 
   return null;
 }
 
-export default function Map({ towns, currentYear }: MapProps) {
+export default function Map({ towns, currentYear, selectedTown }: MapProps) {
   const filteredTowns = towns.filter(t => t.year <= currentYear);
 
   return (
@@ -37,29 +43,35 @@ export default function Map({ towns, currentYear }: MapProps) {
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         
-        {filteredTowns.map((town, idx) => (
-          <CircleMarker
-            key={`${town.municipality}-${idx}`}
-            center={[town.lat, town.lng]}
-            radius={6}
-            pathOptions={{
-              fillColor: town.year === currentYear ? '#ef4444' : '#2563eb',
-              color: '#ffffff',
-              weight: 2,
-              fillOpacity: 0.8,
-            }}
-          >
-            <Popup>
-              <div className="p-1">
-                <h3 className="font-bold text-lg">{town.municipality}</h3>
-                <p className="text-sm text-gray-600 capitalize">{town.type} in {town.county} County</p>
-                <p className="text-sm font-medium mt-1">Established: {town.year}</p>
-              </div>
-            </Popup>
-          </CircleMarker>
-        ))}
+        {filteredTowns.map((town, idx) => {
+          const isNew = town.year === currentYear;
+          const isSelected = selectedTown?.municipality === town.municipality;
+          
+          return (
+            <CircleMarker
+              key={`${town.municipality}-${idx}`}
+              center={[town.lat, town.lng]}
+              radius={isSelected ? 10 : isNew ? 8 : 6}
+              pathOptions={{
+                fillColor: isSelected ? '#ef4444' : isNew ? '#f59e0b' : '#2563eb',
+                color: '#ffffff',
+                weight: isSelected ? 3 : 2,
+                fillOpacity: 0.8,
+                className: isNew ? 'pulse-marker' : ''
+              }}
+            >
+              <Popup>
+                <div className="p-1">
+                  <h3 className="font-bold text-lg">{town.municipality}</h3>
+                  <p className="text-sm text-gray-600 capitalize">{town.type} in {town.county} County</p>
+                  <p className="text-sm font-medium mt-1">Established: {town.year}</p>
+                </div>
+              </Popup>
+            </CircleMarker>
+          );
+        })}
         
-        <MapUpdater towns={filteredTowns} />
+        <MapUpdater towns={filteredTowns} selectedTown={selectedTown} />
       </MapContainer>
       
       <div className="absolute top-4 right-4 z-[1000] bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-lg border border-black/5">
