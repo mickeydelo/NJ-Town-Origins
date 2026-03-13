@@ -1,24 +1,35 @@
 import { Town } from '../data/towns';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Calendar } from 'lucide-react';
+import { MapPin, Calendar, X } from 'lucide-react';
 
 interface SidebarProps {
   towns: Town[];
   currentYear: number;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ towns, currentYear }: SidebarProps) {
+export default function Sidebar({ towns, currentYear, onClose }: SidebarProps) {
   const filteredTowns = towns
     .filter(t => t.year <= currentYear)
     .sort((a, b) => b.year - a.year);
 
   return (
-    <div className="flex flex-col h-full bg-white border-l border-gray-100 shadow-xl w-80">
-      <div className="p-6 border-b border-gray-50">
-        <h2 className="text-xl font-bold text-gray-900">Municipalities</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          {filteredTowns.length} formed by {currentYear}
-        </p>
+    <div className="flex flex-col h-full bg-white border-l border-gray-100 shadow-xl w-full md:w-80">
+      <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Municipalities</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {filteredTowns.length} formed by {currentYear}
+          </p>
+        </div>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="md:hidden p-2 text-gray-400 hover:text-gray-600"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
