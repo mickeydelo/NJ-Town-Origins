@@ -21,6 +21,10 @@ export default function App() {
     }
   };
 
+  const newlyFoundedTowns = useMemo(() => {
+    return NJ_TOWNS.filter(t => t.year === currentYear);
+  }, [currentYear]);
+
   return (
     <div className="flex flex-col md:flex-row h-[100dvh] w-full bg-[#fdfdfd] text-gray-900 overflow-hidden font-sans">
       {/* Main Content */}
@@ -64,6 +68,29 @@ export default function App() {
           
           {/* Floating Timeline Control */}
           <div className="absolute bottom-[calc(3rem+env(safe-area-inset-bottom))] md:bottom-10 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 md:px-6 z-[1000]">
+            {/* Newly Founded Towns Ticker */}
+            <div className="h-8 mb-2 flex justify-center">
+              <AnimatePresence mode="wait">
+                {newlyFoundedTowns.length > 0 && (
+                  <motion.div
+                    key={currentYear}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-1 rounded-full shadow-lg text-xs font-bold whitespace-nowrap overflow-hidden"
+                  >
+                    <Sparkles size={12} className="shrink-0" />
+                    <span className="truncate">
+                      {newlyFoundedTowns.length === 1 
+                        ? `Founded: ${newlyFoundedTowns[0].municipality}`
+                        : `Founded: ${newlyFoundedTowns.map(t => t.municipality).join(', ')}`
+                      }
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <Timeline 
               minYear={minYear} 
               maxYear={maxYear} 
