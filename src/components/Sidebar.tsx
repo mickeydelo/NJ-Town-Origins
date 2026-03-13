@@ -29,8 +29,18 @@ export default function Sidebar({ towns, currentYear }: SidebarProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
+              className="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group relative overflow-hidden"
             >
+              {/* Tooltip Overlay */}
+              <div className="absolute inset-0 bg-gray-900/95 text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center z-10 pointer-events-none">
+                <div className="text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-2">Detailed Info</div>
+                <div className="space-y-1 text-sm">
+                  <p><span className="text-gray-400">County:</span> {town.county}</p>
+                  <p><span className="text-gray-400">Type:</span> <span className="capitalize">{town.type}</span></p>
+                  <p><span className="text-gray-400">Established:</span> {town.year}</p>
+                </div>
+              </div>
+
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-mono font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
                   {town.year}
